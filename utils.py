@@ -253,7 +253,7 @@ class OrderBook:
             else:
                 # add to tree
                 self.insertLevel(aLevel, aSide)  
-                self.updateHigestBidAfterAdd(aLevel)              
+                self.updateHighestBidAfterAdd(aLevel)              
         else:
             if(self.theAskLevelTree == None):
                 #initialize tree
@@ -273,7 +273,7 @@ class OrderBook:
         # 2. the current largest bid is the left child of aLevel
         if(self.theHighestBid.theRightChildLevel == aLevel):
             self.theHighestBid = aLevel
-        elif(aLevel.theLeftChild == self.theHighestBid):
+        elif(aLevel.theLeftChildLevel == self.theHighestBid):
             self.theHighestBid = aLevel
         
     def updateLowestAskAfterAdd(self, aLevel):
@@ -362,7 +362,7 @@ class OrderBook:
                 self.theBidLevelTree = y 
             else:
                 self.theAskLevelTree = y                                               
-        elif(aLevel == aLevel.parent.theParentLevel):
+        elif(aLevel == aLevel.theParentLevel.theParentLevel):
             aLevel.theParentLevel.theLeftChildLevel = y
         else:
             aLevel.theParentLevel.theRightChildLevel = y
@@ -432,7 +432,7 @@ class OrderBook:
         while(aLevel.theParentLevel.theColour == 1):                        # While parent is red
             if(aLevel.theParentLevel == aLevel.theParentLevel.theParentLevel.theRightChildLevel):         # if parent is right child of its parent
                 u = aLevel.theParentLevel.theParentLevel.theLeftChildLevel                  # Left child of grandparent
-                if(u.theColour == 1):                          # if color of left child of grandparent i.e, uncle node is red
+                if(u != None and u.theColour == 1):                          # if color of left child of grandparent i.e, uncle node is red
                     u.theColour = 0                           # Set both children of grandparent node as black
                     aLevel.theParentLevel.theColour = 0
                     aLevel.theParentLevel.theParentLevel.theColour = 1             # Set grandparent node as Red
