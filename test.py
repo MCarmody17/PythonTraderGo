@@ -50,3 +50,6 @@ def testStopwatchTimestamp(aSize, aTrialNumber, aDelta):
         else:
             myStopwatch.doTimestamp(myTimestamp)
         
+def testOrderBook():
+
+    myOrderBook = OrderBook()
