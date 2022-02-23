@@ -1,23 +1,6 @@
 import numpy as np
 from queue import PriorityQueue
 
-
-def rightRotate(aRoot, aLevel):
-    y = aLevel.left                                       # Y = Left child of x
-    aLevel.left = y.right                                 # Change left child of x to right child of y
-    if y.right != None :
-        y.right.parent = aLevel
-
-    y.parent = aLevel.parent                              # Change parent of y as parent of x
-    if aLevel.parent == None :                            # If x is root node
-        aRoot = y                                # Set y as root
-    elif aLevel == aLevel.parent.right :
-        aLevel.parent.right = y
-    else:
-        aLevel.parent.left = y
-    y.right = aLevel
-    aLevel.parent = y
-
 class Stopwatch:
 
     def __init__(self, aSize):
@@ -53,7 +36,7 @@ class Trader:
 
 class Level:
 
-    def __init__(self, aPrice):
+    def __init__(self, aPrice, aNullLevel):
         self.thePrice = aPrice
         self.theTotalVolume = 0
         self.theMyVolume = 0
@@ -62,8 +45,8 @@ class Level:
         self.theFirstOrder = None
         self.theLastOrder = None
         self.theParentLevel = None
-        self.theLeftChildLevel = None
-        self.theRightChildLevel = None
+        self.theLeftChildLevel = aNullLevel
+        self.theRightChildLevel = aNullLevel
 
     def addOrder(self, aOrder):
         if(self.theFirstOrder == None):
@@ -223,8 +206,12 @@ class OrderBook:
     def __init__(self):
         self.theOrders = {}
         self.theLevels = {}
-        self.theBidLevelTree = None
-        self.theAskLevelTree = None
+
+        self.theNullLevel = Level(0, None)
+        self.theNullLevel.theColour = 0
+
+        self.theBidLevelTree = self.theNullLevel
+        self.theAskLevelTree = self.theNullLevel
         self.theLowestAsk = None
         self.theHighestBid = None
 
@@ -246,16 +233,17 @@ class OrderBook:
     def addExistingLevel(self, aLevel, aSide):
         # we have to add the level to the tree 
         if(aSide): # aSide = True is buy side
-            if(self.theBidLevelTree == None):
+            if(self.theBidLevelTree == self.theNullLevel):
                 # initialize tree
+                aLevel.theColour = 0
                 self.theBidLevelTree = aLevel
-                self.theHighestBid = aLevel
+                self.theHighestBid = aLevel                
             else:
                 # add to tree
                 self.insertLevel(aLevel, aSide)  
                 self.updateHighestBidAfterAdd(aLevel)              
         else:
-            if(self.theAskLevelTree == None):
+            if(self.theAskLevelTree == self.theNullLevel):
                 #initialize tree
                 self.theAskLevelTree = aLevel
                 self.theLowestAsk = aLevel
@@ -322,7 +310,7 @@ class OrderBook:
             self.theLowestBid = aLevel.rightChildLevel
 
     def addNewLevel(self, aPrice, aSide):
-        myNewLevel = Level(aPrice)
+        myNewLevel = Level(aPrice, self.theNullLevel)        
         self.theLevels[aPrice] = myNewLevel
         self.addExistingLevel(myNewLevel, aSide)
         return myNewLevel
@@ -351,28 +339,28 @@ class OrderBook:
         return self.theHighestAskLevel
 
     def leftRotate(self, aLevel, aSide):
-        y = aLevel.theRightChildLevel                                   
-        aLevel.theRightChildLevel = y.theLeftChildLevel                                
-        if(y.theLeftChildLevel != None):
-            y.theLeftChildLevel.theParentLevel = aLevel
+        myOldRightChild = aLevel.theRightChildLevel                                   
+        aLevel.theRightChildLevel = myOldRightChild.theLeftChildLevel                                
+        if(myOldRightChild.theLeftChildLevel != self.theNullLevel):
+            myOldRightChild.theLeftChildLevel.theParentLevel = aLevel
 
-        y.theParentLevel = aLevel.theParentLevel                             
+        myOldRightChild.theParentLevel = aLevel.theParentLevel                             
         if(aLevel.theParentLevel == None):  
             if(aSide):                          
-                self.theBidLevelTree = y 
+                self.theBidLevelTree = myOldRightChild 
             else:
-                self.theAskLevelTree = y                                               
-        elif(aLevel == aLevel.theParentLevel.theParentLevel):
-            aLevel.theParentLevel.theLeftChildLevel = y
-        else:
-            aLevel.theParentLevel.theRightChildLevel = y
-        y.theLeftChildLevel = aLevel
-        aLevel.theParentLevel = y
+                self.theAskLevelTree = myOldRightChild                                               
+        elif(aLevel == aLevel.theParentLevel.theLeftChildLevel):
+            aLevel.theParentLevel.theLeftChildLevel = myOldRightChild
+        else:  
+            aLevel.theParentLevel.theRightChildLevel = myOldRightChild
+        myOldRightChild.theLeftChildLevel = aLevel
+        aLevel.theParentLevel = myOldRightChild
 
     def rightRotate(self, aLevel, aSide):
         myOldLeftChild = aLevel.theLeftChildLevel                         
         aLevel.theLeftChildLevel = myOldLeftChild.theRightChildLevel       
-        if(myOldLeftChild.theRightChildLevel != None):
+        if(myOldLeftChild.theRightChildLevel != self.theNullLevel):
             myOldLeftChild.theRightChildLevel.theParentLevel = aLevel
 
         myOldLeftChild.theParentLevel = aLevel.theParentLevel              
@@ -395,7 +383,7 @@ class OrderBook:
         else:
             x = self.theAskLevelTree
 
-        while(x != None):                        
+        while(x != self.theNullLevel):                
             y = x
             if(aNewLevel.thePrice < x.thePrice):
                 x = x.theLeftChildLevel
@@ -422,17 +410,11 @@ class OrderBook:
 
         self.fixInsert(aNewLevel, aSide)                         
 
-    def fixInsert(self, aLevel, aSide):
-
-        if(aSide):
-            myRootLevel = self.theBidLevelTree
-        else:
-            myRootLevel = self.theAskLevelTree
-
+    def fixInsert(self, aLevel, aSide):   
         while(aLevel.theParentLevel.theColour == 1):                      
             if(aLevel.theParentLevel == aLevel.theParentLevel.theParentLevel.theRightChildLevel): 
                 u = aLevel.theParentLevel.theParentLevel.theLeftChildLevel            
-                if(u != None and u.theColour == 1):                       
+                if(u.theColour == 1):                       
                     u.theColour = 0                      
                     aLevel.theParentLevel.theColour = 0
                     aLevel.theParentLevel.theParentLevel.theColour = 1       
@@ -457,39 +439,49 @@ class OrderBook:
                         self.leftRotate(aLevel, aSide)                        
                     aLevel.theParentLevel.theColour = 0
                     aLevel.theParentLevel.theParentLevel.theColour = 1
-                    self.rightRotate(aLevel.theParentLevel.theParentLevel, aSide)             
-            if(aLevel == myRootLevel):                           
-                break
-        myRootLevel.theColour = 0                             
+                    self.rightRotate(aLevel.theParentLevel.theParentLevel, aSide)   
 
-    def removeLevel(self, aLevel, aSide) :
+            if(aSide):          
+                if(aLevel == self.theBidLevelTree):                           
+                    break
+            else:
+                if(aLevel == self.theBidLevelTree):                           
+                    break
+
+        if(aSide):
+            self.theBidLevelTree.theColour = 0   
+        else:
+            self.theAskLevelTree.theColour = 0                       
+
+    def removeLevel(self, aLevel, aSide):
         y = aLevel
         y_original_color = y.theColour                         
-        if(aLevel.theLeftChildLevel == None):                           
+        if(aLevel.theLeftChildLevel == self.theNullLevel):                           
             x = aLevel.theRightChildLevel                               
-            self.__rb_transplant(aLevel , aLevel.theRightChildlevel)          
-        elif (aLevel.theRightChildLevel == None) :                      
+            self.__rb_transplant(aLevel, aLevel.theRightChildlevel, aSide)          
+        elif(aLevel.theRightChildLevel == self.theNullLevel) :                      
             x = aLevel.theLeftChildLevel                                    
-            self.__rb_transplant (aLevel , aLevel.theLeftChildLevel)           
-        else:                                              
-            y = self.minimum(aLevel.theRightChildLevel)                   
+            self.__rb_transplant(aLevel, aLevel.theLeftChildLevel, aSide)           
+        else:                                            
+            y = self.minimum(aLevel.theRightChildLevel)                
             y_original_color = y.theColour                
             x = y.theRightChildLevel
-            if(y.theParentLevel == aLevel):                           
+         
+            if(y.theParentLevel == aLevel):               
                 x.theParentLevel = y                            
             else:
-                self.__rb_transplant(y , y.theRightChildLevel)
+                self.__rb_transplant(y, y.theRightChildLevel, aSide)
                 y.theRightChildLevel = aLevel.theRightChildLevel
                 y.theRightChildLevel.theParentLevel = y
 
-            self.__rb_transplant(aLevel , y )
+            self.__rb_transplant(aLevel, y, aSide)
             y.theLeftChildLevel = aLevel.theLeftChildLevel
             y.theLeftChildLevel.theParentLevel = y
             y.theColour = aLevel.theColour
         if(y_original_color == 0):                       
             self.fixDelete(x, aSide)
 
-    def fixDelete(self , aLevel, aSide) :
+    def fixDelete(self, aLevel, aSide):
         if(aSide):
             myRoot = self.theBidLevelTree
         else:
@@ -497,7 +489,7 @@ class OrderBook:
 
         while(aLevel != myRoot and aLevel.theColour == 0):     
             if(aLevel == aLevel.theParentLevel.theLeftChildLevel):                
-                s = aLevel.theParentLevel.theRightChildLevel       
+                s = aLevel.theParentLevel.theRightChildLevel   
                 if(s.theColour == 1):               
                     s.theColour = 0                      
                     aLevel.theParentLevel.theColour = 1             
@@ -557,12 +549,12 @@ class OrderBook:
         v.theParentLevel = u.theParentLevel
 
     def minimum(self, aLevel):
-        while(aLevel.theLeftChildLevel != None):
+        while(aLevel.theLeftChildLevel != self.theNullLevel):
             aLevel = aLevel.theLeftChildLevel
         return aLevel
 
     def __printCall(self, aLevel, indent, last) :
-        if(aLevel != None):
+        if(aLevel != self.theNullLevel):
             print(indent, end=' ')
             if last :
                 print ("R----",end= ' ')
@@ -576,7 +568,7 @@ class OrderBook:
             self.__printCall ( aLevel.theLeftChildLevel, indent , False )
             self.__printCall ( aLevel.theRightChildLevel , indent , True )
 
-    def print_tree (self, aSide) :
+    def print_tree(self, aSide) :
         if(aSide):
             myRoot = self.theBidLevelTree
         else:
