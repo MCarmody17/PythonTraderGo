@@ -395,15 +395,15 @@ class OrderBook:
         else:
             x = self.theAskLevelTree
 
-        while(x != None):                           # Find position for new node
+        while(x != None):                        
             y = x
             if(aNewLevel.thePrice < x.thePrice):
                 x = x.theLeftChildLevel
             else:
                 x = x.theRightChildLevel
 
-        aNewLevel.theParentLevel = y                                  # Set parent of Node as y
-        if(y == None):                                   # If parent i.e, is none then it is root node
+        aNewLevel.theParentLevel = y                             
+        if(y == None):                              
             if(aSide):
                 self.theBidLevelTree = aNewLevel
             else:
@@ -429,54 +429,54 @@ class OrderBook:
         else:
             myRootLevel = self.theAskLevelTree
 
-        while(aLevel.theParentLevel.theColour == 1):                        # While parent is red
-            if(aLevel.theParentLevel == aLevel.theParentLevel.theParentLevel.theRightChildLevel):         # if parent is right child of its parent
-                u = aLevel.theParentLevel.theParentLevel.theLeftChildLevel                  # Left child of grandparent
-                if(u != None and u.theColour == 1):                          # if color of left child of grandparent i.e, uncle node is red
-                    u.theColour = 0                           # Set both children of grandparent node as black
+        while(aLevel.theParentLevel.theColour == 1):                      
+            if(aLevel.theParentLevel == aLevel.theParentLevel.theParentLevel.theRightChildLevel): 
+                u = aLevel.theParentLevel.theParentLevel.theLeftChildLevel            
+                if(u != None and u.theColour == 1):                       
+                    u.theColour = 0                      
                     aLevel.theParentLevel.theColour = 0
-                    aLevel.theParentLevel.theParentLevel.theColour = 1             # Set grandparent node as Red
-                    aLevel = aLevel.theParentLevel.theParentLevel                   # Repeat the algo with Parent node to check conflicts
+                    aLevel.theParentLevel.theParentLevel.theColour = 1       
+                    aLevel = aLevel.theParentLevel.theParentLevel            
                 else:
-                    if(aLevel == aLevel.theParentLevel.theLeftChildLevel):                # If k is left child of it's parent
+                    if(aLevel == aLevel.theParentLevel.theLeftChildLevel):               
                         aLevel = aLevel.theParentLevel
-                        self.rightRotate(aLevel, aSide)                        # Call for right rotation
+                        self.rightRotate(aLevel, aSide)                      
                     aLevel.theParentLevel.theColour = 0
                     aLevel.theParentLevel.theParentLevel.theColour = 1
                     self.leftRotate(aLevel.theParentLevel.theParentLevel, aSide)
-            else:                                         # if parent is left child of its parent
-                u = aLevel.theParentLevel.theParentLevel.theRightChildLevel                 # Right child of grandparent
-                if(u.theColour == 1):                          # if color of right child of grandparent i.e, uncle node is red
-                    u.theColour = 0                           # Set color of childs as black
+            else:                                        
+                u = aLevel.theParentLevel.theParentLevel.theRightChildLevel                 
+                if(u.theColour == 1):                        
+                    u.theColour = 0                          
                     aLevel.theParentLevel.theColour = 0
-                    aLevel.theParentLevel.theParentLevel.theColour = 1             # set color of grandparent as Red
-                    aLevel = aLevel.theParentLevel.theParentLevel                   # Repeat algo on grandparent to remove conflicts
+                    aLevel.theParentLevel.theParentLevel.theColour = 1           
+                    aLevel = aLevel.theParentLevel.theParentLevel               
                 else:
-                    if(aLevel == aLevel.theParentLevel.theRightChildLevel):               # if k is right child of its parent
+                    if(aLevel == aLevel.theParentLevel.theRightChildLevel):          
                         aLevel = aLevel.theParentLevel
-                        self.leftRotate(aLevel, aSide)                        # Call left rotate on parent of k
+                        self.leftRotate(aLevel, aSide)                        
                     aLevel.theParentLevel.theColour = 0
                     aLevel.theParentLevel.theParentLevel.theColour = 1
-                    self.rightRotate(aLevel.theParentLevel.theParentLevel, aSide)              # Call right rotate on grandparent
-            if(aLevel == myRootLevel):                            # If k reaches root then break
+                    self.rightRotate(aLevel.theParentLevel.theParentLevel, aSide)             
+            if(aLevel == myRootLevel):                           
                 break
-        myRootLevel.theColour = 0                               # Set color of root as black
+        myRootLevel.theColour = 0                             
 
     def removeLevel(self, aLevel, aSide) :
         y = aLevel
-        y_original_color = y.theColour                          # Store the color of z- node
-        if(aLevel.theLeftChildLevel == None):                            # If left child of z is NULL
-            x = aLevel.theRightChildLevel                                     # Assign right child of z to x
-            self.__rb_transplant(aLevel , aLevel.theRightChildlevel)            # Transplant Node to be deleted with x
-        elif (aLevel.theRightChildLevel == None) :                       # If right child of z is NULL
-            x = aLevel.theLeftChildLevel                                      # Assign left child of z to x
-            self.__rb_transplant (aLevel , aLevel.theLeftChildLevel)             # Transplant Node to be deleted with x
-        else:                                              # If z has both the child nodes
-            y = self.minimum(aLevel.theRightChildLevel)                    # Find minimum of the right sub tree
-            y_original_color = y.theColour                      # Store color of y
+        y_original_color = y.theColour                         
+        if(aLevel.theLeftChildLevel == None):                           
+            x = aLevel.theRightChildLevel                               
+            self.__rb_transplant(aLevel , aLevel.theRightChildlevel)          
+        elif (aLevel.theRightChildLevel == None) :                      
+            x = aLevel.theLeftChildLevel                                    
+            self.__rb_transplant (aLevel , aLevel.theLeftChildLevel)           
+        else:                                              
+            y = self.minimum(aLevel.theRightChildLevel)                   
+            y_original_color = y.theColour                
             x = y.theRightChildLevel
-            if(y.theParentLevel == aLevel):                              # If y is child of z
-                x.theParentLevel = y                                # Set parent of x as y
+            if(y.theParentLevel == aLevel):                           
+                x.theParentLevel = y                            
             else:
                 self.__rb_transplant(y , y.theRightChildLevel)
                 y.theRightChildLevel = aLevel.theRightChildLevel
@@ -486,56 +486,54 @@ class OrderBook:
             y.theLeftChildLevel = aLevel.theLeftChildLevel
             y.theLeftChildLevel.theParentLevel = y
             y.theColour = aLevel.theColour
-        if(y_original_color == 0):                          # If color is black then fixing is needed
+        if(y_original_color == 0):                       
             self.fixDelete(x, aSide)
 
-    # Function to fix issues after deletion
     def fixDelete(self , aLevel, aSide) :
         if(aSide):
             myRoot = self.theBidLevelTree
         else:
             myRoot = self.theAskLevelTree
 
-        while(aLevel != myRoot and aLevel.theColour == 0):           # Repeat until x reaches nodes and color of x is black
-            if(aLevel == aLevel.theParentLevel.theLeftChildLevel):                       # If x is left child of its parent
-                s = aLevel.theParentLevel.theRightChildLevel        # Sibling of x
-                if(s.theColour == 1):                         # if sibling is red
-                    s.theColour = 0                           # Set its color to black
-                    aLevel.theParentLevel.theColour = 1                    # Make its parent red
-                    self.leftRotate(aLevel.theParentLevel, aSide)                  # Call for left rotate on parent of x
+        while(aLevel != myRoot and aLevel.theColour == 0):     
+            if(aLevel == aLevel.theParentLevel.theLeftChildLevel):                
+                s = aLevel.theParentLevel.theRightChildLevel       
+                if(s.theColour == 1):               
+                    s.theColour = 0                      
+                    aLevel.theParentLevel.theColour = 1             
+                    self.leftRotate(aLevel.theParentLevel, aSide)                 
                     s = aLevel.theParentLevel.theRightChildLevel
-                # If both the child are black
                 if(s.theLeftChildLevel.theColour == 0 and s.theRightChildLevel.theColour == 0):
-                    s.theColour = 1                           # Set color of s as red
+                    s.theColour = 1                     
                     aLevel = aLevel.theParentLevel
                 else:
-                    if(s.theRightChildLevel.theColour == 0):               # If right child of s is black
-                        s.theLeftChildLevel.theColour = 0                  # set left child of s as black
-                        s.theColour = 1                       # set color of s as red
-                        self.rightRotate(s, aSide)                     # call right rotation on x
+                    if(s.theRightChildLevel.theColour == 0):            
+                        s.theLeftChildLevel.theColour = 0               
+                        s.theColour = 1                 
+                        self.rightRotate(s, aSide)                     
                         s = aLevel.theParentLevel.theRightChildLevel
 
                     s.theColour = aLevel.theParentLevel.theColour
-                    aLevel.theParentLevel.theColour = 0                    # Set parent of x as black
+                    aLevel.theParentLevel.theColour = 0                  
                     s.theRightChildLevel.theColour = 0
-                    self.leftRotate(aLevel.theParentLevel, aSide)                  # call left rotation on parent of x
+                    self.leftRotate(aLevel.theParentLevel, aSide)             
                     aLevel = myRoot
-            else:                                        # If x is right child of its parent
-                s = aLevel.theParentLevel.theLeftChildLevel                         # Sibling of x
-                if(s.theColour == 1):                         # if sibling is red
-                    s.theColour = 0                           # Set its color to black
-                    aLevel.theParentLevel.theColour = 1                    # Make its parent red
-                    self.rightRotate(aLevel.theParentLevel, aSide)                  # Call for right rotate on parent of x
+            else:                                     
+                s = aLevel.theParentLevel.theLeftChildLevel                      
+                if(s.theColour == 1):                         
+                    s.theColour = 0                      
+                    aLevel.theParentLevel.theColour = 1                  
+                    self.rightRotate(aLevel.theParentLevel, aSide)               
                     s = aLevel.theParentLevel.theLeftChildLevel
 
                 if(s.theRightChildLevel.theColour == 0 and s.theRightChildLevel.theColour == 0):
                     s.theColour = 1
                     aLevel = aLevel.theParentLevel
                 else:
-                    if(s.theLeftChildLevel.theColour == 0):                # If left child of s is black
-                        s.theRightChildLevel.theColour = 0                 # set right child of s as black
+                    if(s.theLeftChildLevel.theColour == 0):                
+                        s.theRightChildLevel.theColour = 0                 
                         s.theColour = 1
-                        self.leftRotate(s, aSide)                     # call left rotation on x
+                        self.leftRotate(s, aSide)                     
                         s = aLevel.theParentLevel.theLeftChildLevel
 
                     s.theColour = aLevel.theParentLevel.theColour
@@ -545,8 +543,6 @@ class OrderBook:
                     aLevel = myRoot
         aLevel.theColour = 0
 
-        
-    # Function to transplant nodes
     def __rb_transplant(self, u, v, aSide):
         
         if(u.theParentLevel == None):
@@ -565,7 +561,6 @@ class OrderBook:
             aLevel = aLevel.theLeftChildLevel
         return aLevel
 
-    # Function to print
     def __printCall(self, aLevel, indent, last) :
         if(aLevel != None):
             print(indent, end=' ')
@@ -581,22 +576,9 @@ class OrderBook:
             self.__printCall ( aLevel.theLeftChildLevel, indent , False )
             self.__printCall ( aLevel.theRightChildLevel , indent , True )
 
-    # Function to call print
     def print_tree (self, aSide) :
         if(aSide):
             myRoot = self.theBidLevelTree
         else:
             myRoot = self.theAskLevelTree
         self.__printCall ( myRoot , "" , True )
-'''
-self.thePrice = aPrice
-        self.theTotalVolume = 0
-        self.theMyVolume = 0
-        self.theSize = 0
-        self.theColour = 1 # 1 = red, 0 = black
-        self.theFirstOrder = NULL
-        self.theLastOrder = NULL
-        self.theParentLevel = NULL
-        self.theLeftChildLevel = NULL
-        self.theRightChildLevel = NULL
-'''
