@@ -458,7 +458,7 @@ class OrderBook:
         y_original_color = y.theColour                         
         if(aLevel.theLeftChildLevel == self.theNullLevel):                           
             x = aLevel.theRightChildLevel                               
-            self.__rb_transplant(aLevel, aLevel.theRightChildlevel, aSide)          
+            self.__rb_transplant(aLevel, aLevel.theRightChildLevel, aSide)          
         elif(aLevel.theRightChildLevel == self.theNullLevel) :                      
             x = aLevel.theLeftChildLevel                                    
             self.__rb_transplant(aLevel, aLevel.theLeftChildLevel, aSide)           
