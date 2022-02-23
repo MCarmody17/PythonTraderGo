@@ -53,3 +53,21 @@ def testStopwatchTimestamp(aSize, aTrialNumber, aDelta):
 def testOrderBook():
 
     myOrderBook = OrderBook()
+    testOrderBookAdd(myOrderBook)
+
+def testOrderBookAdd(aOrderBook):
+
+    #__init__(self, aPrice, aTimestamp, aVolume, aTraderName, aSide, aId, aIsMine):
+    myOrderA = Order(10, 0, 100, "Bob", 1, 0, False)
+    myOrderB = Order(10, 0, 100, "Bob", 1, 1, False)
+    myOrderC = Order(11, 0, 100, "Bob", 1, 2, False)
+    myOrderD = Order(12, 0, 100, "Bob", 1, 3, False)
+    myOrderE = Order(13, 0, 100, "Bob", 1, 4, False)
+
+    aOrderBook.addOrder(myOrderA)
+    aOrderBook.addOrder(myOrderB)
+    aOrderBook.addOrder(myOrderC)
+    aOrderBook.addOrder(myOrderD)
+    aOrderBook.addOrder(myOrderE)
+
+testOrderBook()
