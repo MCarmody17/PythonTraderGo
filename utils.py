@@ -255,27 +255,16 @@ class OrderBook:
     def updateHighestBidAfterAdd(self, aLevel):
         # we have added 'aLevel' to the tree
         # we want to check if it is the new highest bid
-        # it will be the highest bid if
-        # either if the following are true:
-        # 1. aLevel is the right child of the current largest bid
-        # 2. the current largest bid is the left child of aLevel
-        if(self.theHighestBid.theRightChildLevel == aLevel):
+        if(self.theHighestBid.thePrice < aLevel.thePrice):
             self.theHighestBid = aLevel
-        elif(aLevel.theLeftChildLevel == self.theHighestBid):
-            self.theHighestBid = aLevel
-        
+
     def updateLowestAskAfterAdd(self, aLevel):
         # we have added 'aLevel to the tree
         # we want to check if it is the lowest ask
-        # it will be the lowest ask if 
-        # either of the following are true:
-        # 1. aLevel is the left child of the current lowest ask
-        # 2. the current lowest ask is the right child of aLevel
-        if(self.theLowestAsk.theLeftChild == aLevel):
-            self.theHighestBid = aLevel
-        elif(aLevel.theRightChild == self.theLowestAsk):
+        if(self.theLowestAsk.thePrice > aLevel.thePrice):
             self.theLowestAsk = aLevel
 
+    # TODO: FIX
     def updateHighestBidBeforeRemove(self, aLevel):
 
         # we have removed 'aLevel' from the tree
@@ -293,6 +282,7 @@ class OrderBook:
         else:
             self.theHighestBid = aLevel.theLeftChildLevel
 
+    # TODO: FIX
     def updateLowestAskBeforeRemove(self, aLevel):
         # we have removed 'aLevel' from the tree
         # if aLevel was the lose, we must
