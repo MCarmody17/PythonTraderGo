@@ -551,12 +551,12 @@ class OrderBook:
     def minimum(self, aLevel):
         while(aLevel.theLeftChildLevel != self.theNullLevel):
             aLevel = aLevel.theLeftChildLevel
-        return 
+        return aLevel
         
     def maximum(self, aLevel):
         while(aLevel.theRightChildLevel != self.theNullLevel):
             aLevel = aLevel.theRightChildLevel
-        return 
+        return aLevel
 
     def __printCall(self, aLevel, indent, last) :
         if(aLevel != self.theNullLevel):
