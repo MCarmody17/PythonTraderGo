@@ -272,15 +272,20 @@ class OrderBook:
         # find the new highest bid
         # there are two possibilities:
         # 1. The max bid is a right child
-        #    --> take the parent as the new max
+        #    --> take the parent as the new max,
+        #    --> or the max of the left subtree
+        #
         # 2. The max bid is the root
-        #    --> take the left child as the new max
+        #    --> take the max of the left subtree
         if(aLevel != self.theHighestBid):
             return
         elif(aLevel.theParentLevel is not None):
-            self.theHighestBid = aLevel.theParentLevel
+            if(aLevel.theLeftChildLevel == self.theNullLevel):
+                self.theHighestBid = aLevel.theParentLevel
+            else:
+                self.theHighestBid = self.maximum(aLevel.theLeftChildLevel)
         else:
-            self.theHighestBid = aLevel.theLeftChildLevel
+            self.theHighestBid = self.maximum(aLevel.theLeftChildLevel)
 
     # TODO: FIX
     def updateLowestAskBeforeRemove(self, aLevel):
@@ -289,15 +294,20 @@ class OrderBook:
         # find the new lowest ask
         # there are two possibilities:
         # 1. The min ask is a left child
-        #    --> take the parent as the new min
+        #    --> take the parent as the new min,
+        #    --> or the min of the right subtree
+        #
         # 2. The min ask is the root
-        #    --> take the left child as the new min
+        #    --> take the min of the right subtree
         if(aLevel != self.theLowestAsk):
             return
         elif(aLevel.theParentLevel is not None):
-            self.theLowestAsk = aLevel.theParentLevel
+            if(aLevel.theRightChildLevel == self.theNullLevel):
+                self.theLowestAsk = aLevel.theParentLevel
+            else:
+                self.theLowestAsk = self.minimum(aLevel.theRightChildLevel)
         else:
-            self.theLowestBid = aLevel.rightChildLevel
+            self.theLowestAsk = self.minimum(aLevel.theRightChildLevel)
 
     def addNewLevel(self, aPrice, aSide):
         myNewLevel = Level(aPrice, self.theNullLevel)        
@@ -541,7 +551,12 @@ class OrderBook:
     def minimum(self, aLevel):
         while(aLevel.theLeftChildLevel != self.theNullLevel):
             aLevel = aLevel.theLeftChildLevel
-        return aLevel
+        return 
+        
+    def maximum(self, aLevel):
+        while(aLevel.theRightChildLevel != self.theNullLevel):
+            aLevel = aLevel.theRightChildLevel
+        return 
 
     def __printCall(self, aLevel, indent, last) :
         if(aLevel != self.theNullLevel):
