@@ -285,7 +285,10 @@ class OrderBook:
             else:
                 self.theHighestBid = self.maximum(aLevel.theLeftChildLevel)
         else:
-            self.theHighestBid = self.maximum(aLevel.theLeftChildLevel)
+            if(aLevel.theLeftChildLevel != self.theNullLevel):
+                self.theHighestBid = self.maximum(aLevel.theLeftChildLevel)
+            else:
+                return None
 
     # TODO: FIX
     def updateLowestAskBeforeRemove(self, aLevel):
@@ -307,7 +310,10 @@ class OrderBook:
             else:
                 self.theLowestAsk = self.minimum(aLevel.theRightChildLevel)
         else:
-            self.theLowestAsk = self.minimum(aLevel.theRightChildLevel)
+            if(aLevel.theRightChild != self.theNullLevel):
+                self.theLowestAsk = self.minimum(aLevel.theRightChildLevel)
+            else:
+                return None
 
     def addNewLevel(self, aPrice, aSide):
         myNewLevel = Level(aPrice, self.theNullLevel)        
