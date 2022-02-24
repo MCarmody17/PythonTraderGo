@@ -1,5 +1,6 @@
 import numpy as np
 from queue import PriorityQueue
+from collections import deque
 
 class Stopwatch:
 
@@ -264,7 +265,6 @@ class OrderBook:
         if(self.theLowestAsk.thePrice > aLevel.thePrice):
             self.theLowestAsk = aLevel
 
-    # TODO: FIX
     def updateHighestBidBeforeRemove(self, aLevel):
 
         # we have removed 'aLevel' from the tree
@@ -290,7 +290,6 @@ class OrderBook:
             else:
                 return None
 
-    # TODO: FIX
     def updateLowestAskBeforeRemove(self, aLevel):
         # we have removed 'aLevel' from the tree
         # if aLevel was the lose, we must
@@ -563,6 +562,36 @@ class OrderBook:
         while(aLevel.theRightChildLevel != self.theNullLevel):
             aLevel = aLevel.theRightChildLevel
         return aLevel
+
+    def sum(self, aLevel, aTotal):
+        if(aLevel == self.theNullLevel):
+            return aTotal
+        else: 
+            return aLevel.thePrice + \
+                sum(aLevel.theLeftChildLevel) + \
+                sum(aLevel.theRightChildLevel)
+
+    def sumFirstN(self, aLevel, N):
+        myTotal = 0
+        myLevelStack = deque()
+        myLevel = aLevel
+        myIndex = 0
+        while(myLevelStack or myLevel != self.theNullLevel):
+    
+            if(myLevel != self.theNullLevel):
+                myLevelStack.append(myLevel)
+                myLevel = myLevel.theLeftChildLevel
+            else:
+                myLevel = myLevelStack.pop()
+                myTotal += myLevel.thePrice
+                myIndex += 1
+                if(myIndex == N):
+                    return myTotal
+    
+                myLevel = myLevel.theRightChildLevel
+            
+        return myTotal
+ 
 
     def __printCall(self, aLevel, indent, last) :
         if(aLevel != self.theNullLevel):
