@@ -1,5 +1,7 @@
 import time
 from utils import *
+from rb import *
+
 
 def runTrials(aMethod, aIterations):
 
@@ -54,15 +56,16 @@ def testOrderBook():
 
     myOrderBook = OrderBook()
     testOrderBookAdd(myOrderBook)
+    testOrderBookRemove(myOrderBook)
 
 def testOrderBookAdd(aOrderBook):
 
     #__init__(self, aPrice, aTimestamp, aVolume, aTraderName, aSide, aId, aIsMine):
     myOrderA = Order(10, 0, 100, "Bob", 1, 0, False)
-    myOrderB = Order(10, 0, 100, "Bob", 1, 1, False)
-    myOrderC = Order(11, 0, 100, "Bob", 1, 2, False)
-    myOrderD = Order(12, 0, 100, "Bob", 1, 3, False)
-    myOrderE = Order(13, 0, 100, "Bob", 1, 4, False)
+    myOrderB = Order(11, 0, 100, "Bob", 1, 1, False)
+    myOrderC = Order(12, 0, 100, "Bob", 1, 2, False)
+    myOrderD = Order(13, 0, 100, "Bob", 1, 3, False)
+    myOrderE = Order(14, 0, 100, "Bob", 1, 4, False)
 
     aOrderBook.addOrder(myOrderA)
     aOrderBook.addOrder(myOrderB)
@@ -70,4 +73,47 @@ def testOrderBookAdd(aOrderBook):
     aOrderBook.addOrder(myOrderD)
     aOrderBook.addOrder(myOrderE)
 
-testOrderBook()
+def testOrderBookRemove(aOrderBook):
+
+    print("====")
+    aOrderBook.removeOrder(0)
+    print("====")
+    aOrderBook.removeOrder(1)
+    print("====")
+    aOrderBook.removeOrder(2)
+    print("====")
+    aOrderBook.removeOrder(3)
+    print("====")
+    aOrderBook.removeOrder(4)
+    
+class OrderBookTester:
+
+    def __init__(self):
+
+        self.theOrderBook = OrderBook()
+        self.theRbTree = RBTree()
+        self.theTime = 0
+
+    def checkEquals(self, aSide):
+  
+        return self.theOrderBook.express_tree(aSide) \
+            == self.theRbTree.express_tree()
+
+    def addNode(self, aVal, aSide):
+
+        myNewOrder = Order(aVal, self.theTime, 1, "Bob", aSide, aSide, False)
+        self.theOrderBook.addOrder(myNewOrder)        
+        self.theRbTree.insertNode(aVal)
+        self.theTime += 1
+
+    def removeNode(self, aId):
+
+        myVal = self.theOrderBook.theOrders[aId].thePrice
+        self.theOrderBook.removeOrder(aId)
+        self.theRbTree.delete_node(myVal)
+
+myTester = OrderBookTester()
+myTester.addNode(10, True)
+print(myTester.checkEquals(True))
+print(myTester.theOrderBook.theExpression)
+print(myTester.theRbTree.theExpression)

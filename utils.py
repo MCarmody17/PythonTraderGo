@@ -292,7 +292,7 @@ class OrderBook:
 
     def updateLowestAskBeforeRemove(self, aLevel):
         # we have removed 'aLevel' from the tree
-        # if aLevel was the lose, we must
+        # if aLevel was the lowest , we must
         # find the new lowest ask
         # there are two possibilities:
         # 1. The min ask is a left child
@@ -593,24 +593,33 @@ class OrderBook:
         return myTotal
  
 
-    def __printCall(self, aLevel, indent, last) :
-        if(aLevel != self.theNullLevel):
-            print(indent, end=' ')
+     # Function to generate string expressing tree
+    def __expressCall ( self , node , indent , last ) :
+      
+        if node != self.theNullLevel :
+            self.theExpression += indent + " "
+            #print(indent, end=' ')
             if last :
-                print ("R----",end= ' ')
+                self.theExpression += "R---- "
+                #print ("R----",end= ' ')
                 indent += "     "
             else :
-                print("L----",end=' ')
+                self.theExpression += "L---- "
+                #print("L----",end=' ')
                 indent += "|    "
 
-            s_color = "RED" if aLevel.theColour == 1 else "BLACK"
-            print ( str ( aLevel.thePrice ) + "(" + s_color + ")" )
-            self.__printCall ( aLevel.theLeftChildLevel, indent , False )
-            self.__printCall ( aLevel.theRightChildLevel , indent , True )
+            s_color = "RED" if node.theColour == 1 else "BLACK"
+            self.theExpression += str ( node.thePrice ) + "(" + s_color + ")"
+            #print ( str ( node.val ) + "(" + s_color + ")" )
+            self.__expressCall ( node.theLeftChildLevel , indent , False )
+            self.__expressCall ( node.theRightChildLevel , indent , True )
 
-    def print_tree(self, aSide) :
+    def express_tree (self, aSide) :
+        self.theExpression = ""
+
         if(aSide):
             myRoot = self.theBidLevelTree
         else:
             myRoot = self.theAskLevelTree
-        self.__printCall ( myRoot , "" , True )
+        self.__expressCall ( myRoot , "" , True )
+        return self.theExpression
