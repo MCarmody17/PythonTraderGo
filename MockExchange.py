@@ -4,8 +4,9 @@ from time import time
 
 class ExchangeOrderBook:
 
-    def __init__(self, aName):
+    def __init__(self, aName, aProduct):
         self.theName = aName
+        self.theProduct = aProduct
         self.theOrders = {}
         self.theLevels = {}
 
@@ -18,6 +19,9 @@ class ExchangeOrderBook:
         self.theHighestBid = None
 
     def broadcastTrade(self, aAggresive, aPassive, aPassiveSide, aPrice, aVolume):
+      
+        self.theProduct.recordTrade(self.theName, aPassive, aPassiveSide, aPrice, aVolume)
+        self.theProduct.recordTrade(self.theName, aAggresive, not aPassiveSide, aPrice, aVolume)
         print("TRADE EXECUTED")
 
     def broadcastAdd(self, aOrder):
@@ -520,10 +524,10 @@ class Trade:
 
 class ExchangeProduct:
 
-    def __init__(self, aName):
+    def __init__(self, aName, aMockExchange):
+        self.theExchange = aMockExchange
         self.theName = aName
-        self.theOrderBook = ExchangeOrderBook(aName)
-        self.theTrades = {}
+        self.theOrderBook = ExchangeOrderBook(aName, self)
         self.theCurrentId = 0
 
     def addOrder(self, aTraderName, aPrice, aVolume, aSide):
@@ -533,6 +537,48 @@ class ExchangeProduct:
         self.theCurrentId += 1
 
         self.theOrderBook.addOrder(myNewOrder)
+
+    def recordTrade(self, aProduct, aTraderName, aSide, aPrice, aVolume):
+        self.theExchange.recordTrade(aProduct, aTraderName, aSide, aPrice, aVolume)    
+
+
+class ExchangeTrader:
+
+    def __init__(self, aName):
+        self.theName = aName
+        self.theTotalBuyVolume = {}
+        self.theTotalSellVolume = {}
+        self.theAverageBuyPrice = {}
+        self.theAverageSellPrice = {}
+
+    def getPosition(self, aProduct):
+        return self.theTotalBuyVolume[aProduct] - self.theTotalSellVolume[aProduct]
+
+    def recordBuy(self, aProduct, aVolume, aPrice):
+        myNewVolume = self.theTotalBuyVolume[aProduct] + aVolume
+        self.theAverageBuyPrice[aProduct] = ((self.theAverageBuyPrice[aProduct] * self.theTotalBuyVolume[aProduct]) \
+            + aVolume * aPrice) / myNewVolume
+        self.theTotalBuyVolume[aProduct] = myNewVolume
+    
+    def recordSell(self, aProduct, aVolume, aPrice):
+        myNewVolume = self.theTotalSellVolume[aProduct] + aVolume
+        self.theAverageSellPrice[aProduct] = ((self.theAverageSellPrice[aProduct] * self.theTotalSellVolume[aProduct]) \
+            + aVolume * aPrice) / myNewVolume
+        self.theTotalSellVolume[aProduct] = myNewVolume
+
+    def getRealizedPnl(self, aProduct):
+        return (self.theAverageSellPrice[aProduct] - self.theAverageBuyPrice[aProduct]) * \
+            min(self.theTotalSellVolume[aProduct], self.theTotalBuyVolume[aProduct])
+
+    def getUnrealizedPnl(self, aProduct, aPrice):
+        myPosition = self.getPosition(aProduct)
+        if(myPosition > 0):
+            return (aPrice - self.theAverageBuyPrice[aProduct]) * myPosition
+        elif(myPosition < 0):
+            return (aPrice - self.theAverageSellPrice[aProduct]) * myPosition
+        else:
+            return 0
+
 
 
 
@@ -544,10 +590,10 @@ class MockExchange:
         self.theTraders = {}
 
     def addProduct(self, aName):
-        self.theProducts[aName] = ExchangeProduct(aName)
+        self.theProducts[aName] = ExchangeProduct(aName, self)
 
     def addNewTrader(self, aName):
-        self.theTraders[aName] = Trader(aName)
+        self.theTraders[aName] = ExchangeTrader(aName)
 
     def getTraderPosition(self, aName):
         return self.theTraders[aName].getPosition()
@@ -561,3 +607,8 @@ class MockExchange:
     def addOrder(self, aProduct, aTraderName, aPrice, aVolume, aSide):
         self.theProducts[aProduct].addOrder(aTraderName, aPrice, aVolume, aSide)
 
+    def recordTrade(self, aTraderName, aProduct, aSide, aPrice, aVolume):
+        if(aSide):
+            self.theTraders[aTraderName].addBuy(aProduct, aVolume, aPrice)
+        else:
+            self.theTraders[aTraderName].addSell(aProduct, aVolume, aPrice)
