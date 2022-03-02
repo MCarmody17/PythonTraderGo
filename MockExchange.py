@@ -1,6 +1,9 @@
+from cmath import atan
 from utils import *
 from time import time
 
+POSITION_LIMIT = 100
+MAX_REQS_PER_SEC = 50
 
 class ExchangeOrderBook:
 
@@ -546,15 +549,19 @@ class ExchangeTrader:
 
     def __init__(self, aName):
         self.theName = aName
+        self.theFees = {}
         self.theTotalBuyVolume = {}
         self.theTotalSellVolume = {}
         self.theAverageBuyPrice = {}
         self.theAverageSellPrice = {}
+        self.theBanned = False
+        self.theStopwatch = Stopwatch(MAX_REQS_PER_SEC)
 
     def getPosition(self, aProduct):
         return self.theTotalBuyVolume[aProduct] - self.theTotalSellVolume[aProduct]
 
     def recordBuy(self, aProduct, aVolume, aPrice):
+
         myNewVolume = self.theTotalBuyVolume[aProduct] + aVolume
         self.theAverageBuyPrice[aProduct] = ((self.theAverageBuyPrice[aProduct] * self.theTotalBuyVolume[aProduct]) \
             + aVolume * aPrice) / myNewVolume
@@ -580,14 +587,16 @@ class ExchangeTrader:
             return 0
 
 
-
-
 class MockExchange:
 
-    def __init__(self):
+    def __init__(self, aAggresiveFee, aPassiveFee):
+        self.theAggresiveFee = aAggresiveFee
+        self.thePassiveFee = aPassiveFee
+
         self.theOrders = {}
         self.theProducts = {}
         self.theTraders = {}
+        
 
     def addProduct(self, aName):
         self.theProducts[aName] = ExchangeProduct(aName, self)
@@ -612,3 +621,19 @@ class MockExchange:
             self.theTraders[aTraderName].addBuy(aProduct, aVolume, aPrice)
         else:
             self.theTraders[aTraderName].addSell(aProduct, aVolume, aPrice)
+
+        self.enforcePositionLimit(aProduct, aTraderName)
+    
+    def enforcePositionLimit(self, aProduct, aTraderName):
+
+        if(abs(self.theTraders[aTraderName].getPosition(aProduct)) > POSITION_LIMIT):
+            self.banTrader(aTraderName)
+
+    def enforceRateLimit(self, aTraderName):
+        myTimestamp = time()
+        myDuration = self.theTraders[aTraderName].theStopwatch.doTimestamp(myTimestamp)
+        if(myDuration < 1.0):
+            self.banTrader(aTraderName)
+
+    def banTrader(self, aTraderName):
+        self.theTraders[aTraderName].theBanned = True
