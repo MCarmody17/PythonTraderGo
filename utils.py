@@ -32,7 +32,7 @@ class Trader:
     def getPosition(self):
         return self.thePosition
 
-    def updatePosition(self, aChange):
+    def changePosition(self, aChange):
         self.thePosition += aChange
 
 class Level:
