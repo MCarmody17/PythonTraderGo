@@ -3,6 +3,9 @@ from queue import PriorityQueue
 from collections import deque
 
 class Listener:
+
+    __slots__ = 'theConnectionInfo', 'theExchangeInfo', 'theStrategy'
+
     def __init__(self, aConnectionInfo, aExchangeInfo, aStrategy):
         self.theConnectionInfo = aConnectionInfo
         self.theExchangeInfo = aExchangeInfo
@@ -26,6 +29,8 @@ class Listener:
 #       any instrument for more than 1 minute
 class Hedger:
     
+    __slots__ = 'theExecutor', 'theExchangeInfo'
+
     def __init__(self, aExecutor, aExchangeInfo):
         self.theExecutor = aExecutor
         self.theExchangeInfo = aExchangeInfo
@@ -35,11 +40,14 @@ class Hedger:
 
 class Executor: 
 
+    __slots__ = 'theHedger'
     def __init__(self, aHedger):
         self.theHedger = aHedger
 
 
 class Strategy:
+
+    __slots__ = 'theExchangeInfo', 'theExecutor'
 
     def __init__(self, aExchangeInfo, aExecutor):
         self.theExchangeInfo = aExchangeInfo
@@ -49,6 +57,8 @@ class Strategy:
         print("NOT IMPLEMENTED")
     
 class Product:
+
+    __slots__ = 'theName', 'theOrderBook'
 
     def __init__(self, aName):
         self.theName = aName
@@ -60,6 +70,8 @@ class Product:
 # how long ago the (n - 50)th order was if we are on
 # the nth order
 class Stopwatch:
+
+    __slots__ = 'theTimestamps', 'theSize', 'theCount', 'theLastTimestamp'
 
     def __init__(self, aSize):
         self.theTimestamps = np.zeros(aSize)
@@ -94,6 +106,8 @@ class Stopwatch:
 
 class Trader:
 
+    __slots__ = 'theName', 'thePositions', 'theStopwatch', 'theActiveOrders'
+
     def __init__(self, aName):
         self.theName = aName
         self.thePositions = {}
@@ -118,6 +132,8 @@ class Trader:
         
 
 class ExchangeInfo:
+
+    __slots__ = 'theOurName', 'theProducts', 'theTraders'
 
     def __init__(self, aOurName):
         self.theOurName = aOurName
@@ -149,6 +165,17 @@ class ExchangeInfo:
     
 
 class Level:
+
+    __slots__ = 'thePrice', \
+        'theTotalVolume', \
+        'theMyVolume', \
+        'theSize', \
+        'theColour', \
+        'theFirstOrder', \
+        'theLastOrder', \
+        'theParentLevel', \
+        'theLeftChildLevel', \
+        'theRightChildLevel'
 
     def __init__(self, aPrice, aNullLevel):
         self.thePrice = aPrice
@@ -261,6 +288,17 @@ class Level:
 
 class Order: 
 
+    __slots__ = 'thePrice', \
+        'theTimestamp', \
+        'theVolume', \
+        'theTraderName', \
+        'theSide', \
+        'theId', \
+        'theNextOrder', \
+        'thePreviousOrder', \
+        'theIsMine', \
+        'theLevel'
+
     def __init__(self, aPrice, aTimestamp, aVolume, aTraderName, aSide, aId, aIsMine):
         self.thePrice = aPrice
         self.theTimestamp = aTimestamp
@@ -316,6 +354,15 @@ class Order:
         return self.theLevel
 
 class OrderBook:
+
+    __slots__ = 'theOrders', \
+        'theLevels', \
+        'theNullLevel', \
+        'theBidLevelTree', \
+        'theAskLevelTree', \
+        'theLowestAsk', \
+        'theHighestBid', \
+        'theExpression'
 
     def __init__(self):
         self.theOrders = {}
