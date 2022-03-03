@@ -12,19 +12,32 @@ class Listener:
         myIsMine = (aTraderName == self.theExchangeInfo.theOurName)
         myNewOrder = Order(aPrice, aTimestamp, aVolume, aTraderName, aSide, aId, myIsMine)
         self.theExchangeInfo.addOrder(aProductName, myNewOrder)
-        self.theStrategy.handleAddOrder(aProductName, aOrder)
+        self.theStrategy.handleAddOrder(aProductName, myNewOrder)
 
+    def handleCancelOrder(self):
+        print("NOT IMPLEMENTD")
+
+    def handleTrade(self):
+        print("NOT IMPLEMENTED")
+
+
+# Hedging rules:
+#    1. No more than 10 unhedged lots may be held in
+#       any instrument for more than 1 minute
 class Hedger:
     
-    def __init__(self, aExecutor):
+    def __init__(self, aExecutor, aExchangeInfo):
         self.theExecutor = aExecutor
+        self.theExchangeInfo = aExchangeInfo
 
-
+    def handlePositionChange(self, aProduct, aPositionChange):
+        print("NOT IMLEMENTED")
 
 class Executor: 
 
     def __init__(self, aHedger):
         self.theHedger = aHedger
+
 
 class Strategy:
 
@@ -69,6 +82,15 @@ class Stopwatch:
         self.theLastTimestamp = (self.theLastTimestamp + 1) % self.theSize
         self.theTimestamps[self.theLastTimestamp] = aTimestamp
         return aTimestamp - myLastTimestamp
+
+    # returns the total number of stored timestamps
+    # which are within aPeriod of aTimestamp
+    def recentTimestampCount(self, aTimestamp, aPeriod):
+        myTimestampVector = np.full(self.theSize, aTimestamp)
+        myDifferences = np.subtract(myTimestampVector, self.theTimestamps)
+        myPeriodVector = np.full(self.theSize, aPeriod)
+        myComparison = np.less_equal(myDifferences, myPeriodVector)
+        return np.count_nonzero(myComparison)
 
 class Trader:
 
