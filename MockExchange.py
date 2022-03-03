@@ -21,10 +21,10 @@ class ExchangeOrderBook:
         self.theLowestAsk = None
         self.theHighestBid = None
 
-    def broadcastTrade(self, aAggresive, aPassive, aPassiveSide, aPrice, aVolume):
+    def broadcastTrade(self, aAggresiveTrader, aPassiveTrader, aPassiveSide, aPrice, aVolume):
       
-        self.theProduct.recordTrade(self.theName, aPassive, aPassiveSide, aPrice, aVolume)
-        self.theProduct.recordTrade(self.theName, aAggresive, not aPassiveSide, aPrice, aVolume)
+        self.theProduct.recordTrade(self.theName, aPassiveTrader, aPassiveSide, aPrice, aVolume, False)
+        self.theProduct.recordTrade(self.theName, aAggresiveTrader, not aPassiveSide, aPrice, aVolume, True)
         print("TRADE EXECUTED")
 
     def broadcastAdd(self, aOrder):
@@ -527,9 +527,11 @@ class Trade:
 
 class ExchangeProduct:
 
-    def __init__(self, aName, aMockExchange):
+    def __init__(self, aName, aMockExchange, aPassiveFee, aAggressiveFee):
         self.theExchange = aMockExchange
         self.theName = aName
+        self.thePassiveFee = aPassiveFee
+        self.theAggressiveFee = aAggressiveFee
         self.theOrderBook = ExchangeOrderBook(aName, self)
         self.theCurrentId = 0
 
@@ -541,13 +543,12 @@ class ExchangeProduct:
 
         self.theOrderBook.addOrder(myNewOrder)
 
-    def recordTrade(self, aProduct, aTraderName, aSide, aPrice, aVolume):
-        self.theExchange.recordTrade(aProduct, aTraderName, aSide, aPrice, aVolume)    
-
+    def recordTrade(self, aProduct, aTraderName, aSide, aPrice, aVolume, isAggressive):
+        self.theExchange.recordTrade(aProduct, aTraderName, aSide, aPrice, aVolume, isAggressive)    
 
 class ExchangeTrader:
 
-    def __init__(self, aName):
+    def __init__(self, aName, aExchange):
         self.theName = aName
         self.theFees = {}
         self.theTotalBuyVolume = {}
@@ -556,22 +557,40 @@ class ExchangeTrader:
         self.theAverageSellPrice = {}
         self.theBanned = False
         self.theStopwatch = Stopwatch(MAX_REQS_PER_SEC)
+        self.theExchange = aExchange
+
+    def addProduct(self, aProduct):
+        self.theTotalBuyVolume[aProduct] = 0
+        self.theTotalSellVolume[aProduct] = 0
+        self.theAverageBuyPrice[aProduct] = 0
+        self.theAverageSellPrice[aProduct] = 0
+        self.theFees[aProduct] = 0
 
     def getPosition(self, aProduct):
         return self.theTotalBuyVolume[aProduct] - self.theTotalSellVolume[aProduct]
 
-    def recordBuy(self, aProduct, aVolume, aPrice):
+    def recordFee(self, aProduct, aIsAggressive, aVolume):
+        if(aIsAggressive):
+            myProductFee = self.theExchange.theProducts[aProduct].theAggressiveFee
+        else:
+            myProductsFee = self.theExchange.theProducts[aProduct].thePassiveFee
+        self.theFees[aProduct] += myProductsFee * aVolume
 
+    def recordBuy(self, aProduct, aVolume, aPrice, aIsAggressive):
         myNewVolume = self.theTotalBuyVolume[aProduct] + aVolume
         self.theAverageBuyPrice[aProduct] = ((self.theAverageBuyPrice[aProduct] * self.theTotalBuyVolume[aProduct]) \
             + aVolume * aPrice) / myNewVolume
         self.theTotalBuyVolume[aProduct] = myNewVolume
+
+        self.recordFee(aProduct, aIsAggressive, aVolume)        
     
-    def recordSell(self, aProduct, aVolume, aPrice):
+    def recordSell(self, aProduct, aVolume, aPrice, aIsAggressive):
         myNewVolume = self.theTotalSellVolume[aProduct] + aVolume
         self.theAverageSellPrice[aProduct] = ((self.theAverageSellPrice[aProduct] * self.theTotalSellVolume[aProduct]) \
             + aVolume * aPrice) / myNewVolume
         self.theTotalSellVolume[aProduct] = myNewVolume
+
+        self.recordFee(aProduct, aIsAggressive, aVolume)
 
     def getRealizedPnl(self, aProduct):
         return (self.theAverageSellPrice[aProduct] - self.theAverageBuyPrice[aProduct]) * \
@@ -589,20 +608,19 @@ class ExchangeTrader:
 
 class MockExchange:
 
-    def __init__(self, aAggresiveFee, aPassiveFee):
-        self.theAggresiveFee = aAggresiveFee
-        self.thePassiveFee = aPassiveFee
+    def __init__(self):
 
         self.theOrders = {}
         self.theProducts = {}
         self.theTraders = {}
         
-
-    def addProduct(self, aName):
-        self.theProducts[aName] = ExchangeProduct(aName, self)
+    def addProduct(self, aName, aPassiveFee, aAggressiveFee):
+        self.theProducts[aName] = ExchangeProduct(aName, self, aPassiveFee, aAggressiveFee)
+        for myTrader in self.theTraders:
+            myTrader.addProduct(aName)
 
     def addNewTrader(self, aName):
-        self.theTraders[aName] = ExchangeTrader(aName)
+        self.theTraders[aName] = ExchangeTrader(aName, self)
 
     def getTraderPosition(self, aName):
         return self.theTraders[aName].getPosition()
@@ -616,11 +634,11 @@ class MockExchange:
     def addOrder(self, aProduct, aTraderName, aPrice, aVolume, aSide):
         self.theProducts[aProduct].addOrder(aTraderName, aPrice, aVolume, aSide)
 
-    def recordTrade(self, aTraderName, aProduct, aSide, aPrice, aVolume):
+    def recordTrade(self, aTraderName, aProduct, aSide, aPrice, aVolume, aIsAggressive):
         if(aSide):
-            self.theTraders[aTraderName].addBuy(aProduct, aVolume, aPrice)
+            self.theTraders[aTraderName].recordBuy(aProduct, aVolume, aPrice, aIsAggressive)
         else:
-            self.theTraders[aTraderName].addSell(aProduct, aVolume, aPrice)
+            self.theTraders[aTraderName].recordSell(aProduct, aVolume, aPrice, not aIsAggressive)
 
         self.enforcePositionLimit(aProduct, aTraderName)
     
