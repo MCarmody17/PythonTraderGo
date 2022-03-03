@@ -2,6 +2,16 @@ import numpy as np
 from queue import PriorityQueue
 from collections import deque
 
+class Product:
+    def __init__(self, aName):
+        self.theName = aName
+        self.theOrderBook = OrderBook()
+
+# TODO: might have to add some quick way to answer
+# the question "how many orders in the last second?"
+# Currently this data structure just quickly tells us
+# how long ago the (n - 50)th order was if we are on
+# the nth order
 class Stopwatch:
 
     def __init__(self, aSize):
@@ -16,6 +26,9 @@ class Stopwatch:
     def getCount(self):
         return self.theCount
 
+    # TODO: Watch out for how the exchange does timestamping.
+    # e.g. if one aggressive order trades through multiple passive orders
+    # does each trade caused by this get the same timestamp?
     def doTimestamp(self, aTimestamp):
         self.theCount += 1
         myLastTimestamp = self.theTimestamps[self.theLastTimestamp]
@@ -27,13 +40,57 @@ class Trader:
 
     def __init__(self, aName):
         self.theName = aName
-        self.thePosition = 0
+        self.thePositions = {}
+        self.theStopwatch = Stopwatch(50)
+        self.theActiveOrders = {}
 
-    def getPosition(self):
-        return self.thePosition
+    def getPosition(self, aProductName):
+        return self.thePositions[aProductName]
 
-    def changePosition(self, aChange):
-        self.thePosition += aChange
+    def changePosition(self, aProductName, aChange):
+        self.thePositions[aProductName] += aChange
+
+    def addProduct(self, aProductName):
+        self.thePositions[aProductName] = 0
+
+    def addOrder(self, aOrder):
+        self.theActiveOrders[aOrder.theId] = aOrder
+
+    def removeOrder(self, aOrder):
+        self.theActiveOrders.pop(aOrder.theId)
+
+        
+
+class ExchangeInfo:
+
+    def __init__(self, aOurName):
+        self.theOurName = aOurName
+        self.theProducts = {}
+        self.theTraders = {}
+
+    def addTrader(self, aTraderName):
+        self.theTraders[aTraderName] = Trader(aTraderName)
+
+    def addProduct(self, aProductName):
+        self.theProducts[aProductName] = Product(aProductName)
+        for myTrader in self.theTraders.items():
+            myTrader.addProduct(aProductName)
+
+    def addOrder(self, aProductName, aOrder):
+        if(aProductName not in self.theProducts.keys()):
+            self.addProduct(aProductName)
+        if(aOrder.theTraderName not in self.theTraders.keys()):
+            self.addTrader(aOrder.theTraderName)
+
+        self.theTraders[aOrder.theTraderName].addOrder(aOrder)
+        self.theProducts[aProductName].theOrderBook.addOrder(aOrder)
+  
+    def amendOrder(self, aOrder, aVolumeChange):
+
+        self.theTraders[aOrder.theTraderName]. \
+            theActiveOrders[aOrder.theId]. \
+            changeVolume(aVolumeChange)   
+    
 
 class Level:
 
@@ -600,8 +657,7 @@ class OrderBook:
             
         return myTotal
  
-
-     # Function to generate string expressing tree
+    # Function to generate string expressing tree
     def __expressCall ( self , node , indent , last ) :
       
         if node != self.theNullLevel :
