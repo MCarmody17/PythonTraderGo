@@ -216,17 +216,21 @@ class OrderBook:
         self.theLowestAsk = None
         self.theHighestBid = None
 
+    def initialzieLevels(self, aPriceLevelList):
+        for myPrice in aPriceLevelList:
+            self.addNewLevel(myPrice)
+
     def addOrder(self, aOrder):
         self.theOrders[aOrder.getId()] = aOrder
 
         myOrderPrice = aOrder.getPrice()
         if(not myOrderPrice in self.theLevels):
-            myLevel = self.addNewLevel(aOrder.thePrice, aOrder.theSide)
+            myLevel = self.addNewLevel(aOrder.thePrice)
         else:
             myLevel = self.theLevels[myOrderPrice]
             # if level has size zero, it is not in the tree
             # and must be added again
-            self.addExistingLevel(myLevel, aOrder.theSide)
+        self.addExistingLevel(myLevel, aOrder.theSide)
 
         aOrder.setLevel(myLevel)
         myLevel.addOrder(aOrder)       
@@ -314,10 +318,9 @@ class OrderBook:
             else:
                 return None
 
-    def addNewLevel(self, aPrice, aSide):
+    def addNewLevel(self, aPrice):
         myNewLevel = Level(aPrice, self.theNullLevel)        
         self.theLevels[aPrice] = myNewLevel
-        self.addExistingLevel(myNewLevel, aSide)
         return myNewLevel
 
     def removeOrder(self, aId):
@@ -486,6 +489,10 @@ class OrderBook:
         if(y_original_color == 0):                       
             self.fixDelete(x, aSide)
 
+        aLevel.theParentLevel = self.theNullLevel
+        aLevel.theRightChildLevel = None
+        aLevel.theLeftChildLevel = None
+        
     def fixDelete(self, aLevel, aSide):
         if(aSide):
             myRoot = self.theBidLevelTree
@@ -539,6 +546,7 @@ class OrderBook:
                     self.rightRotate(aLevel.theParentLevel, aSide)
                     aLevel = myRoot
         aLevel.theColour = 0
+
 
     def __rb_transplant(self, u, v, aSide):
         
