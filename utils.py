@@ -2,11 +2,29 @@ import numpy as np
 from queue import PriorityQueue
 from collections import deque
 
+class Hedger:
+    
+    def __init__(self, aExecutor):
+        self.theExecutor = aExecutor
+
+class Executor: 
+
+    def __init__(self, aHedger):
+        self.theHedger = aHedger
+
+class Strategy:
+
+    def __init__(self, aExchangeInfo, aExecutor):
+        self.theExchangeInfo = aExchangeInfo
+        self.theExecutor = aExecutor
+
+    
 class Product:
+
     def __init__(self, aName):
         self.theName = aName
         self.theOrderBook = OrderBook()
-
+ 
 # TODO: might have to add some quick way to answer
 # the question "how many orders in the last second?"
 # Currently this data structure just quickly tells us
