@@ -1,6 +1,5 @@
 import numpy as np
-from queue import PriorityQueue
-from collections import deque
+
 
 class Listener:
 

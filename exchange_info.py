@@ -1,4 +1,5 @@
 from utils import Level, Trader, Product
+from collections import deque
 
 class ExchangeInfo:
 
