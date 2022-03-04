@@ -1,5 +1,13 @@
-from utils import Level, Trader, Product
+from utils import Level, Trader
 from collections import deque
+
+class Product:
+
+    __slots__ = 'theName', 'theOrderBook'
+
+    def __init__(self, aName):
+        self.theName = aName
+        self.theOrderBook = OrderBook()
 
 class ExchangeInfo:
 

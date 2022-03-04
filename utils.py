@@ -1,12 +1,4 @@
 import numpy as np
-
-class Product:
-
-    __slots__ = 'theName', 'theOrderBook'
-
-    def __init__(self, aName):
-        self.theName = aName
-        self.theOrderBook = OrderBook()
  
 # TODO: might have to add some quick way to answer
 # the question "how many orders in the last second?"
