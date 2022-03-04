@@ -569,12 +569,12 @@ class ExchangeTrader:
     def getPosition(self, aProduct):
         return self.theTotalBuyVolume[aProduct] - self.theTotalSellVolume[aProduct]
 
-    def recordFee(self, aProduct, aIsAggressive, aVolume):
+    def recordFee(self, aProduct, aIsAggressive, aPrice, aVolume):
         if(aIsAggressive):
             myProductFee = self.theExchange.theProducts[aProduct].theAggressiveFee
         else:
-            myProductsFee = self.theExchange.theProducts[aProduct].thePassiveFee
-        self.theFees[aProduct] += myProductsFee * aVolume
+            myProductFee = self.theExchange.theProducts[aProduct].thePassiveFee
+        self.theFees[aProduct] += myProductFee * aVolume * aPrice
 
     def recordBuy(self, aProduct, aVolume, aPrice, aIsAggressive):
         myNewVolume = self.theTotalBuyVolume[aProduct] + aVolume
@@ -582,7 +582,7 @@ class ExchangeTrader:
             + aVolume * aPrice) / myNewVolume
         self.theTotalBuyVolume[aProduct] = myNewVolume
 
-        self.recordFee(aProduct, aIsAggressive, aVolume)        
+        self.recordFee(aProduct, aIsAggressive, aPrice, aVolume)        
     
     def recordSell(self, aProduct, aVolume, aPrice, aIsAggressive):
         myNewVolume = self.theTotalSellVolume[aProduct] + aVolume
