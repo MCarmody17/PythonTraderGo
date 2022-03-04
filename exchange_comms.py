@@ -1,8 +1,15 @@
 from utils import Order
+from enum import Enum
+
+# all possible message types 
+class MessageType(Enum):
+    ADD = 0
+    CANCEL = 1
+    TRADE = 2
 
 class MessageHandler:
 
-    __slots__ = 'theExchangeInfo', 'theStrategy', 'theEncoeder', 'theDecoder'
+    __slots__ = 'theExchangeInfo', 'theStrategy', 'theEncoder', 'theDecoder'
     def __init__(self, aExchangeInfo, aStrategy, aEncoder, aDecoder):
         self.theExchangeInfo = aExchangeInfo
         self.theStrategy = aStrategy
@@ -19,8 +26,14 @@ class MessageHandler:
         print("NOT IMPLEMENTD")
 
     def handleTrade(self):
-        print("NOT IMPLEMENTED")
+        print("NOT IMPLEMENTED")   
 
+class Listener:
+
+    __slots__ = 'theMessageHandler'
+
+    def __init__(self, aMessageHandler):
+        self.theMessageHandler = aMessageHandler
 
 class Sender:
 
@@ -32,11 +45,15 @@ class Sender:
     def sendMessage(self, aMessageData):
         print("NOT IMPLEMENTED")
 
-class Listener:
+class Encoder:
 
-    __slots__ = 'theMessageHandler'
-
-    def __init__(self, aMessageHandler):
-        self.theMessageHandler = aMessageHandler
-
+    __slots__ = 'theExchangeInfo'
     
+    def __init__(self, aExchangeInfo):
+        self.theExchangeInfo = aExchangeInfo
+
+    def encodeAddOrder(self, aProduct, aPrice, aVolume, aSide):
+        print("NOT IMPLEMENTED")
+
+    def encodeCancelOrder(self, aProduct, aPrice, aVolume, aSide):
+        print("NOT IMPLEMENTED")
