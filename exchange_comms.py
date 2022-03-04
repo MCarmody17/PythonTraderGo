@@ -1,18 +1,9 @@
 from utils import Order
 
-class Sender:
+class MessageHandler:
 
-    __slots__ = 'theConnectionInfo'
-
-    def __init__(self, aConnectionInfo):
-        self.theConnectionInfo = aConnectionInfo
-
-class Listener:
-
-    __slots__ = 'theConnectionInfo', 'theExchangeInfo', 'theStrategy'
-
-    def __init__(self, aConnectionInfo, aExchangeInfo, aStrategy):
-        self.theConnectionInfo = aConnectionInfo
+    __slots__ = 'theExchangeInfo', 'theStrategy'
+    def __init__(self, aExchangeInfo, aStrategy):
         self.theExchangeInfo = aExchangeInfo
         self.theStrategy = aStrategy
 
@@ -27,3 +18,21 @@ class Listener:
 
     def handleTrade(self):
         print("NOT IMPLEMENTED")
+
+
+class Sender:
+
+    __slots__ = 'theConnectionInfo'
+
+    def __init__(self, aConnectionInfo):
+        self.theConnectionInfo = aConnectionInfo
+
+class Listener:
+
+    __slots__ = 'theConnectionInfo', 'theExchangeInfo', 'theStrategy', 'theMessageHandler'
+
+    def __init__(self, aConnectionInfo, aExchangeInfo, aStrategy, aMessageHandler):
+        self.theConnectionInfo = aConnectionInfo
+        self.theExchangeInfo = aExchangeInfo
+        self.theStrategy = aStrategy
+        self.theMessageHandler = aMessageHandler
