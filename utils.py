@@ -31,6 +31,11 @@ class Stopwatch:
         self.theTimestamps[self.theLastTimestamp] = aTimestamp
         return aTimestamp - myLastTimestamp
 
+    def checkTimestmap(self, aTimestamp):
+        myLastTimestamp = self.theTimestamps[self.theLastTimestamp]
+        self.theLastTimestamp = (self.theLastTimestamp + 1) % self.theSize
+        return aTimestamp - myLastTimestamp
+
     # returns the total number of stored timestamps
     # which are within aPeriod of aTimestamp
     def recentTimestampCount(self, aTimestamp, aPeriod):
