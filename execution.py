@@ -15,11 +15,13 @@ class Hedger:
 
 class Executor: 
 
-    __slots__ = 'theHedger', 'theSender', 'theEncoder'
-    def __init__(self, aHedger, aSender, aEncoder):
+    __slots__ = 'theExchangeInfo', 'theHedger', 'theSender', 'theEncoder'
+    def __init__(self, aExchangeInfo, aHedger, aSender, aEncoder):
+        self.theExchangeInfo = aExchangeInfo
         self.theHedger = aHedger
         self.theSender = aSender
         self.theEncoder = aEncoder
+
 
     def doAddOrder(self, aProduct, aPrice, aVolume, aSide):
         myMessageData = self.theEncoder.encoderAddOrder(aProduct, aPrice, aVolume, aSide)
@@ -28,3 +30,9 @@ class Executor:
     def doCancelOrder(self, aId):
         myMessageData = self.theEncoder.encodeCancelOrder(aId)
         self.theSender.sendMessage(myMessageData)
+
+    def doAmendOrder(self, aId, aNewPrice, aNewVolume):
+        myMessageData = self.theEncode.encodeAmendOrder(aId, aNewPrice, aNewVolume)
+        self.theSender.sendMessage(myMessageData)
+
+    
