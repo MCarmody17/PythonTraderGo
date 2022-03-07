@@ -48,7 +48,7 @@ class Sender:
 class Encoder:
 
     __slots__ = 'theExchangeInfo'
-    
+
     def __init__(self, aExchangeInfo):
         self.theExchangeInfo = aExchangeInfo
 

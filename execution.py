@@ -22,7 +22,6 @@ class Executor:
         self.theSender = aSender
         self.theEncoder = aEncoder
 
-
     def doAddOrder(self, aProduct, aPrice, aVolume, aSide):
         myMessageData = self.theEncoder.encoderAddOrder(aProduct, aPrice, aVolume, aSide)
         self.theSender.sendMessage(myMessageData)
@@ -34,5 +33,4 @@ class Executor:
     def doAmendOrder(self, aId, aNewPrice, aNewVolume):
         myMessageData = self.theEncode.encodeAmendOrder(aId, aNewPrice, aNewVolume)
         self.theSender.sendMessage(myMessageData)
-
     
