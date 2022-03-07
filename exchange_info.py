@@ -65,7 +65,7 @@ class OrderBook:
         self.theLowestAsk = None
         self.theHighestBid = None
 
-    def initialzieLevels(self, aPriceLevelList):
+    def initializeLevels(self, aPriceLevelList):
         for myPrice in aPriceLevelList:
             self.addNewLevel(myPrice)
 
